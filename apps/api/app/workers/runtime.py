@@ -13,7 +13,7 @@ from app.services.events import persist_event
 from app.services.moderation import moderate_text
 from app.services.reporting import build_wrapped_report
 from app.workers.langgraph_scheduler import generate_turn_schedule
-from app.workers.llm import generate_turn_text
+from app.workers.llm import generate_turn_text, get_llm_metadata
 
 
 def _extract_points(snapshot: dict | None) -> list[str]:
@@ -65,6 +65,7 @@ async def run_argument(argument_id: str) -> None:
         delay = PACE_DELAYS.get(pace_mode, 0.03)
         max_turns = int(argument.max_turns)
         turn_schedule = generate_turn_schedule(len(participants), max_turns)
+        llm_metadata = get_llm_metadata()
 
         claim_usage: dict[str, set[int]] = defaultdict(set)
         done_streak: dict[str, int] = defaultdict(int)
@@ -172,7 +173,7 @@ async def run_argument(argument_id: str) -> None:
                     "is_new_claim": is_new_claim,
                     "was_flagged": was_flagged,
                 },
-                model_metadata={"provider": "template_llm", "mode": "mvp"},
+                model_metadata=llm_metadata,
             )
             session.add(turn)
             argument.turn_count = turn_index

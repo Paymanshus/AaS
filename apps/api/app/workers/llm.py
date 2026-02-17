@@ -4,7 +4,29 @@ from app.core.config import get_settings
 from app.db.models import ArgumentPhase
 
 settings = get_settings()
-_client = AsyncOpenAI(api_key=settings.openai_api_key) if settings.openai_api_key else None
+
+
+def _build_client() -> AsyncOpenAI | None:
+    provider = settings.resolved_model_provider()
+    if provider == "gemini" and settings.gemini_api_key:
+        return AsyncOpenAI(
+            api_key=settings.gemini_api_key,
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+        )
+    if provider == "openai" and settings.openai_api_key:
+        return AsyncOpenAI(api_key=settings.openai_api_key)
+    return None
+
+
+_client = _build_client()
+
+
+def get_llm_metadata() -> dict[str, str]:
+    provider = settings.resolved_model_provider()
+    model = settings.resolved_model_name()
+    if provider and model and _client is not None:
+        return {"provider": provider, "model": model, "mode": "live"}
+    return {"provider": "template_llm", "mode": "mvp"}
 
 
 def build_turn_text(
@@ -102,7 +124,7 @@ async def generate_turn_text(
 
     try:
         response = await _client.chat.completions.create(
-            model=settings.openai_model,
+            model=settings.resolved_model_name(),
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},

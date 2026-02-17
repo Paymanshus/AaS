@@ -38,31 +38,43 @@ class EventBus:
     async def publish(self, argument_id: str, payload: dict) -> None:
         await self._ensure_redis()
         if self.redis:
-            await self.redis.publish(self._channel(argument_id), orjson.dumps(payload))
-            return
+            try:
+                await self.redis.publish(self._channel(argument_id), orjson.dumps(payload))
+                return
+            except Exception:
+                # Fall back to in-process fanout when Redis is unavailable.
+                with suppress(Exception):
+                    await self.redis.aclose()
+                self.redis = None
         for queue in self._queues[argument_id]:
             await queue.put(payload)
 
     async def subscribe(self, argument_id: str) -> AsyncIterator[dict]:
         await self._ensure_redis()
         if self.redis:
-            assert self.redis is not None
-            pubsub = self.redis.pubsub(ignore_subscribe_messages=True)
-            await pubsub.subscribe(self._channel(argument_id))
             try:
-                async for raw_msg in pubsub.listen():
-                    data = raw_msg.get("data")
-                    if not data:
-                        continue
-                    if isinstance(data, bytes):
-                        yield orjson.loads(data)
-                    elif isinstance(data, str):
-                        yield orjson.loads(data.encode("utf-8"))
-            finally:
+                assert self.redis is not None
+                pubsub = self.redis.pubsub(ignore_subscribe_messages=True)
+                await pubsub.subscribe(self._channel(argument_id))
+                try:
+                    async for raw_msg in pubsub.listen():
+                        data = raw_msg.get("data")
+                        if not data:
+                            continue
+                        if isinstance(data, bytes):
+                            yield orjson.loads(data)
+                        elif isinstance(data, str):
+                            yield orjson.loads(data.encode("utf-8"))
+                finally:
+                    with suppress(Exception):
+                        await pubsub.unsubscribe(self._channel(argument_id))
+                    await pubsub.aclose()
+                return
+            except Exception:
+                # Fall back to in-process subscription when Redis is unavailable.
                 with suppress(Exception):
-                    await pubsub.unsubscribe(self._channel(argument_id))
-                await pubsub.aclose()
-            return
+                    await self.redis.aclose()
+                self.redis = None
 
         queue: asyncio.Queue[dict] = asyncio.Queue()
         self._queues[argument_id].add(queue)

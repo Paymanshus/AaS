@@ -1,0 +1,45 @@
+Metadata-Version: 2.4
+Name: aas-api
+Version: 0.1.0
+Summary: AaS FastAPI backend
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi>=0.115.0
+Requires-Dist: uvicorn[standard]>=0.30.0
+Requires-Dist: sqlalchemy>=2.0.31
+Requires-Dist: aiosqlite>=0.20.0
+Requires-Dist: asyncpg>=0.29.0
+Requires-Dist: pydantic>=2.8.0
+Requires-Dist: pydantic-settings>=2.4.0
+Requires-Dist: redis>=5.0.7
+Requires-Dist: dramatiq[redis]>=1.17.1
+Requires-Dist: langgraph>=0.2.0
+Requires-Dist: openai>=1.37.0
+Requires-Dist: python-dotenv>=1.0.1
+Requires-Dist: orjson>=3.10.6
+Provides-Extra: dev
+Requires-Dist: pytest>=8.2.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.23.8; extra == "dev"
+Requires-Dist: httpx>=0.27.0; extra == "dev"
+Requires-Dist: ruff>=0.6.0; extra == "dev"
+
+# AaS API
+
+FastAPI backend for argument orchestration, streaming, and report generation.
+
+## Run
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+cp .env.example .env
+uvicorn app.main:app --reload --port 8000
+```
+
+## Worker
+
+```bash
+source .venv/bin/activate
+PYTHONPATH=. dramatiq app.workers.actors
+```

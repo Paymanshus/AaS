@@ -47,6 +47,13 @@ settings = get_settings()
 router = APIRouter(prefix="/v1", tags=["arguments"])
 
 
+def _as_utc(dt: datetime) -> datetime:
+    # SQLite may deserialize timezone columns as naive datetimes.
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=UTC)
+    return dt.astimezone(UTC)
+
+
 async def _get_argument_or_404(session: AsyncSession, argument_id: str) -> Argument:
     argument = await session.get(Argument, argument_id)
     if not argument:
@@ -262,7 +269,7 @@ async def join_argument(
     invite = invite_query.scalar_one_or_none()
     if not invite:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid invite token")
-    if invite.expires_at < datetime.now(UTC):
+    if _as_utc(invite.expires_at) < datetime.now(UTC):
         raise HTTPException(status_code=status.HTTP_410_GONE, detail="Invite expired")
 
     role = invite.role

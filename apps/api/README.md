@@ -18,3 +18,9 @@ uvicorn app.main:app --reload --port 8000
 source .venv/bin/activate
 PYTHONPATH=. dramatiq app.workers.actors
 ```
+
+## Model provider selection
+
+- Default provider is Gemini when `GEMINI_API_KEY` is set.
+- OpenAI is used as fallback when Gemini key is missing and `OPENAI_API_KEY` is set.
+- When both keys are set, choose provider explicitly with `MODEL_PROVIDER` (`gemini` or `openai`).
