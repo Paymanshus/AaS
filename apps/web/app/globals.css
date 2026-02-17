@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #1f2a26;
+  --paper: #fffdf7;
+  --accent: #ff4f2a;
+  --accent-soft: #ffe1d9;
+  --mint: #00a87a;
+  --sky: #85c8ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Space Grotesk", "Avenir Next", "Trebuchet MS", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 20% 10%, #ffd8a8 0%, transparent 40%),
+    radial-gradient(circle at 80% 0%, #d4f5ff 0%, transparent 35%),
+    linear-gradient(160deg, #fffdf7 0%, #f6fff6 100%);
+}
+
+a {
+  color: inherit;
+}
+
+.surface {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+}
+
+.badge-chip {
+  border: 1px solid #ffd2c3;
+  background: #fff3ef;
+  color: #8a2f1c;
+  border-radius: 9999px;
+  font-size: 12px;
+  padding: 0.25rem 0.6rem;
+}
+
+.chat-bubble {
+  border-radius: 16px;
+  padding: 0.75rem 1rem;
+  max-width: 78%;
+  line-height: 1.4;
+}
+
+.chat-left {
+  background: #f4f6f6;
+  border: 1px solid #d9e0de;
+}
+
+.chat-right {
+  background: #1f2a26;
+  color: #f6fff6;
+}
+
+.tilt-card {
+  border: 1px solid #dbdfdd;
+  border-radius: 20px;
+  box-shadow: 0 14px 40px rgba(22, 34, 29, 0.08);
+}

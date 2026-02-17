@@ -1,0 +1,3 @@
+-- Placeholder bootstrap for Supabase adaptation.
+-- API currently auto-creates schema via SQLAlchemy for local MVP.
+-- Use Alembic migration generation before production rollout.
